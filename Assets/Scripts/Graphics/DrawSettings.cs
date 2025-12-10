@@ -50,7 +50,7 @@ namespace DLS.Graphics
 		public static readonly UIThemeDLS ActiveUITheme = CreateUITheme();
 
 		// ---- Helper functions ----
-		public static Color GetStateColour(bool isHigh, uint index, bool hover = false)
+		public static Color GetStateColour(bool isHigh, long index, bool hover = false)
 		{
 			index = (uint)Mathf.Min(index, ActiveTheme.StateHighCol.Length - 1); // clamp just to be safe...
 			if (!isHigh && hover) return ActiveTheme.StateHoverCol[index];

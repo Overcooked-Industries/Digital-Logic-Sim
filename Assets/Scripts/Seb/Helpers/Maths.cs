@@ -895,6 +895,21 @@ namespace Seb.Helpers
 
 			return (int)unsignedValue;
 		}
+		public static long TwosComplement(long unsignedValue, int numBits)
+		{
+			if (numBits < 32)
+			{
+				long unsignedRange = 1u << numBits;
+				long firstNegativeValue = unsignedRange >> 1;
+
+				if (unsignedValue >= firstNegativeValue)
+				{
+					return (unsignedValue - unsignedRange);
+				}
+			}
+
+			return unsignedValue;
+		}
 
 		#endregion
 	}

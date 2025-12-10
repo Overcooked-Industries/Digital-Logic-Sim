@@ -53,7 +53,7 @@ namespace DLS.Game
 					ChipType.DisplayLED
 				),
 				CreateChipCollection("MEMORY",
-					ChipType.Rom_256x16
+					ChipType.Rom_256x32
 				)
 			};
 		}

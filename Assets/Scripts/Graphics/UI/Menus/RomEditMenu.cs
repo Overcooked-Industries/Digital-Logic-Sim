@@ -219,6 +219,18 @@ namespace DLS.Graphics
 				_ => throw new NotImplementedException("Unsupported display format: " + displayFormat)
 			};
 		}
+		
+		static string LongToDisplayString(long raw, DataDisplayMode displayFormat, int bitCount)
+		{
+			return displayFormat switch
+			{
+				DataDisplayMode.Binary => Convert.ToString(raw, 2).PadLeft(bitCount, '0'),
+				DataDisplayMode.DecimalSigned => Maths.TwosComplement(raw, bitCount) + "",
+				DataDisplayMode.DecimalUnsigned => raw + "",
+				DataDisplayMode.HEX => raw.ToString("X").PadLeft(bitCount / 4, '0'),
+				_ => throw new NotImplementedException("Unsupported display format: " + displayFormat)
+			};
+		}
 
 		// Convert string with given format to uint
 		static uint DisplayStringToUInt(string displayString, DataDisplayMode stringFormat, int bitCount)
@@ -359,7 +371,7 @@ namespace DLS.Graphics
 				IDS_inputRow[i] = new UIHandle("ROM_rowInputField", i);
 				InputFieldState state = UI.GetInputFieldState(IDS_inputRow[i]);
 
-				string displayString = UIntToDisplayString(romChip.InternalData[i], dataDisplayMode, ActiveRomDataBitCount);
+				string displayString = LongToDisplayString(romChip.InternalData[i], dataDisplayMode, ActiveRomDataBitCount);
 				state.SetText(displayString, i == focusedRowIndex);
 
 				rowNumberStrings[i] = (i + ":").PadLeft(lineNumberPadLength + 1, '0');

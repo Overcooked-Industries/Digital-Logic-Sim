@@ -247,8 +247,8 @@ namespace DLS.Simulation
 					const int pulseInputOldIndex = 2;
 
 					uint inputState = chip.InputPins[0].State;
-					bool pulseInputHigh = PinState.FirstBitHigh(inputState);
-					uint pulseTicksRemaining = chip.InternalState[pulseTicksRemainingIndex];
+					bool pulseInputHigh = PinState.FirstBitHigh(inputState); 
+					long pulseTicksRemaining = chip.InternalState[pulseTicksRemainingIndex];
 
 					if (pulseTicksRemaining == 0)
 					{
@@ -400,7 +400,7 @@ namespace DLS.Simulation
 					}
 
 					// Output current pixel colour
-					uint colData = chip.InternalState[PinState.GetBitStates(addressPin)];
+					long colData = chip.InternalState[PinState.GetBitStates(addressPin)];
 					chip.OutputPins[0].State = (ushort)((colData >> 0) & 0b1111); // red
 					chip.OutputPins[1].State = (ushort)((colData >> 4) & 0b1111); // green
 					chip.OutputPins[2].State = (ushort)((colData >> 8) & 0b1111); // blue
@@ -490,14 +490,15 @@ namespace DLS.Simulation
 
 					break;
 				}
-				case ChipType.Rom_256x16:
+				case ChipType.Rom_256x32:
 				{
 					const int ByteMask = 0b11111111;
 					uint address = PinState.GetBitStates(chip.InputPins[0].State);
-					uint data = chip.InternalState[address];
-					chip.OutputPins[0].State = (ushort)((data >> 16) & ByteMask);
-					chip.OutputPins[1].State = (ushort)((data >> 8) & ByteMask);
-					chip.OutputPins[2].State = (ushort)(data & ByteMask);
+					long data = chip.InternalState[address];
+					chip.OutputPins[0].State = (ushort)((data >> 24) & ByteMask);
+					chip.OutputPins[1].State = (ushort)((data >> 16) & ByteMask);
+					chip.OutputPins[2].State = (ushort)((data >> 8) & ByteMask);
+					chip.OutputPins[3].State = (ushort)(data & ByteMask);
 					break;
 				}
 				case ChipType.Buzzer:
@@ -526,14 +527,14 @@ namespace DLS.Simulation
 			return BuildSimChip(chipDesc, library, -1, null);
 		}
 
-		public static SimChip BuildSimChip(ChipDescription chipDesc, ChipLibrary library, int subChipID, uint[] internalState)
+		public static SimChip BuildSimChip(ChipDescription chipDesc, ChipLibrary library, int subChipID, long[] internalState)
 		{
 			SimChip simChip = BuildSimChipRecursive(chipDesc, library, subChipID, internalState);
 			return simChip;
 		}
 
 		// Recursively build full representation of chip from its description for simulation.
-		static SimChip BuildSimChipRecursive(ChipDescription chipDesc, ChipLibrary library, int subChipID, uint[] internalState)
+		static SimChip BuildSimChipRecursive(ChipDescription chipDesc, ChipLibrary library, int subChipID, long[] internalState)
 		{
 			// Recursively create subchips
 			SimChip[] subchips = chipDesc.SubChips.Length == 0 ? Array.Empty<SimChip>() : new SimChip[chipDesc.SubChips.Length];
@@ -581,7 +582,7 @@ namespace DLS.Simulation
 			modificationQueue.Enqueue(command);
 		}
 
-		public static void AddSubChip(SimChip simChip, ChipDescription desc, ChipLibrary chipLibrary, int subChipID, uint[] subChipInternalData)
+		public static void AddSubChip(SimChip simChip, ChipDescription desc, ChipLibrary chipLibrary, int subChipID, long[] subChipInternalData)
 		{
 			SimModifyCommand command = new()
 			{
@@ -693,7 +694,7 @@ namespace DLS.Simulation
 			public ChipDescription chipDesc;
 			public ChipLibrary lib;
 			public int subChipID;
-			public uint[] subChipInternalData;
+			public long[] subChipInternalData;
 			public PinAddress sourcePinAddress;
 			public PinAddress targetPinAddress;
 			public SimPin simPinToAdd;

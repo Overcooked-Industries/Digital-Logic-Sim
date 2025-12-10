@@ -108,15 +108,16 @@ namespace DLS.Game
 			};
 			PinDescription[] outputPins =
 			{
-				CreatePinDescription("OUT C", 1, PinBitCount.Bit8),
-				CreatePinDescription("OUT B", 2, PinBitCount.Bit8),
-				CreatePinDescription("OUT A", 3, PinBitCount.Bit8)
+				CreatePinDescription("OUT D", 1, PinBitCount.Bit8),
+				CreatePinDescription("OUT C", 2, PinBitCount.Bit8),
+				CreatePinDescription("OUT B", 3, PinBitCount.Bit8),
+				CreatePinDescription("OUT A", 4, PinBitCount.Bit8)
 			};
 
 			Color col = new(0.25f, 0.35f, 0.5f);
 			Vector2 size = new(GridSize * 12, SubChipInstance.MinChipHeightForPins(inputPins, outputPins));
 
-			return CreateBuiltinChipDescription(ChipType.Rom_256x16, size, col, inputPins, outputPins);
+			return CreateBuiltinChipDescription(ChipType.Rom_256x32, size, col, inputPins, outputPins);
 		}
 
 		static ChipDescription CreateInputKeyChip()
