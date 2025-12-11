@@ -128,21 +128,21 @@ namespace DLS.Graphics
 		static string AutoFormatInputString(string input)
 		{
 			// Try to parse string in current format
-			if (!TryParseDisplayStringToUInt(input, dataDisplayMode, ActiveRomDataBitCount, out uint uintValue))
+			if (!TryParseDisplayStringToLong(input, dataDisplayMode, ActiveRomDataBitCount, out long longValue))
 			{
 				// If failed to parse in current format, fall back to trying all possible formats
 				// (for example, if player enters -1 in unsigned mode, we can recognize it as signed input and convert to unsigned automatically)
 				foreach (DataDisplayMode fallbackMode in allDisplayModes)
 				{
-					if (TryParseDisplayStringToUInt(input, fallbackMode, ActiveRomDataBitCount, out uint fallbackUIntValue))
+					if (TryParseDisplayStringToLong(input, fallbackMode, ActiveRomDataBitCount, out long fallbackLongValue))
 					{
-						uintValue = fallbackUIntValue;
+						longValue = fallbackLongValue;
 						break;
 					}
 				}
 			}
 
-			return UIntToDisplayString(uintValue, dataDisplayMode, ActiveRomDataBitCount);
+			return LongToDisplayString(longValue, dataDisplayMode, ActiveRomDataBitCount);
 		}
 
 		static void CopyAll()
@@ -182,8 +182,8 @@ namespace DLS.Graphics
 			for (int i = 0; i < IDS_inputRow.Length; i++)
 			{
 				InputFieldState state = UI.GetInputFieldState(IDS_inputRow[i]);
-				TryParseDisplayStringToUInt(state.text, modeCurr, ActiveRomDataBitCount, out uint uintValue);
-				state.SetText(UIntToDisplayString(uintValue, modeNew, ActiveRomDataBitCount), false);
+				TryParseDisplayStringToLong(state.text, modeCurr, ActiveRomDataBitCount, out long longValue);
+				state.SetText(LongToDisplayString(longValue, modeNew, ActiveRomDataBitCount), false);
 			}
 		}
 
@@ -232,55 +232,53 @@ namespace DLS.Graphics
 			};
 		}
 
-		// Convert string with given format to uint
-		static uint DisplayStringToUInt(string displayString, DataDisplayMode stringFormat, int bitCount)
+		// Convert string with given format to long (interpreted as unsigned bit-pattern result)
+		static long DisplayStringToLong(string displayString, DataDisplayMode stringFormat, int bitCount)
 		{
 			displayString = displayString.Replace(" ", string.Empty);
-			uint uintVal;
+			long longVal;
 
 			switch (stringFormat)
 			{
 				case DataDisplayMode.Binary:
-					uintVal = Convert.ToUInt32(displayString, 2);
+					longVal = Convert.ToInt64(displayString, 2);
 					break;
 				case DataDisplayMode.DecimalSigned:
 				{
-					int signedValue = int.Parse(displayString);
-					uint unsignedRange = 1u << bitCount;
+					long signedValue = long.Parse(displayString);
+					long unsignedRange = 1L << bitCount;
 					if (signedValue < 0)
 					{
-						uintVal = (uint)(signedValue + unsignedRange);
+						longVal = signedValue + unsignedRange;
 					}
 					else
 					{
-						uintVal = (uint)signedValue;
+						longVal = signedValue;
 					}
 
 					break;
 				}
 				case DataDisplayMode.DecimalUnsigned:
-					uintVal = uint.Parse(displayString);
+					longVal = long.Parse(displayString);
 					break;
 				case DataDisplayMode.HEX:
-					int value = Convert.ToInt32(displayString, 16);
-					uintVal = (uint)value;
+					longVal = Convert.ToInt64(displayString, 16);
 					break;
 				default:
 					throw new NotImplementedException("Unsupported display format: " + stringFormat);
 			}
 
-			return uintVal;
+			return longVal;
 		}
 
-		static bool TryParseDisplayStringToUInt(string displayString, DataDisplayMode stringFormat, int bitCount, out uint raw)
+		static bool TryParseDisplayStringToLong(string displayString, DataDisplayMode stringFormat, int bitCount, out long raw)
 		{
 			try
 			{
-				raw = DisplayStringToUInt(displayString, stringFormat, bitCount);
-				uint maxVal = (1u << bitCount) - 1;
+				raw = DisplayStringToLong(displayString, stringFormat, bitCount);
+				long maxVal = (1L << bitCount) - 1L;
 
 				// If value is too large to fit in given bit-count, clamp the result and return failure
-				// (note: maybe makes more sense to wrap the result, but I think it's more obvious to player what happened if it just clamps)
 				if (raw > maxVal)
 				{
 					raw = maxVal;
@@ -301,7 +299,7 @@ namespace DLS.Graphics
 			for (int i = 0; i < RowCount; i++)
 			{
 				string displayString = UI.GetInputFieldState(IDS_inputRow[i]).text;
-				TryParseDisplayStringToUInt(displayString, dataDisplayMode, ActiveRomDataBitCount, out uint newValue);
+				TryParseDisplayStringToLong(displayString, dataDisplayMode, ActiveRomDataBitCount, out long newValue);
 				romChip.InternalData[i] = newValue;
 			}
 
@@ -353,7 +351,7 @@ namespace DLS.Graphics
 		{
 			romChip = (SubChipInstance)ContextMenu.interactionContext;
 			RowCount = romChip.InternalData.Length;
-			ActiveRomDataBitCount = 24; //
+			ActiveRomDataBitCount = 32; // support 4 bytes (32 bits)
 
 			ID_DataDisplayMode = new UIHandle("ROM_DataDisplayMode", romChip.ID);
 			ID_scrollbar = new UIHandle("ROM_EditScrollbar", romChip.ID);
@@ -392,3 +390,4 @@ namespace DLS.Graphics
 		}
 	}
 }
+
